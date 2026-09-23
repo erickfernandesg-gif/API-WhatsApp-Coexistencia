@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Conectar WhatsApp Coexistência</title>
+</head>
+<body>
+  <h2>Ativar Coexistência (App Celular + Cloud API)</h2>
+  <button onclick="iniciarEmbeddedSignup()">Conectar WhatsApp Business</button>
+
+  <div id="resultado" style="margin-top: 20px; white-space: pre-wrap; font-family: monospace;"></div>
+
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId            : '38433624692919507', // Substitua pelo ID do seu aplicativo
+        autoLogAppEvents : true,
+        xfbml            : true,
+        version          : 'v21.0'
+      });
+    };
+
+    // Carrega o SDK do Facebook
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "https://connect.facebook.net/pt_BR/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+
+    // Escuta a mensagem de resposta da janela do Embedded Signup
+    window.addEventListener('message', (event) => {
+      if (event.origin !== "https://www.facebook.com" && event.origin !== "https://web.facebook.com") return;
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'WA_EMBEDDED_SIGNUP') {
+          document.getElementById('resultado').innerText = "Dados recebidos:\n" + JSON.stringify(data, null, 2);
+          console.log("Embedded Signup Event:", data);
+        }
+      } catch (e) {
+        // Eventos não JSON ignorados
+      }
+    });
+
+    function iniciarEmbeddedSignup() {
+      FB.login(function(response) {
+        if (response.authResponse) {
+          const authCode = response.authResponse.code;
+          document.getElementById('resultado').innerText += "\nCódigo de Autorização: " + authCode;
+        } else {
+          console.log('Cancelado ou erro no login');
+        }
+      }, {
+        config_id: '1111374464906278', // Criado no painel de desenvolvedor (WhatsApp > Início rápido / Configuração)
+        response_type: 'code',
+        override_default_response_type: true,
+        extras: {
+          setup: {
+            // Parâmetros opcionais para pré-definir a conta
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
