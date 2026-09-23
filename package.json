@@ -1,0 +1,7 @@
+{
+  "name": "whatsapp-coexistencia",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": { "check": "node --check api/exchange-code.js && node --check api/webhook.js && node --check api/send-test-message.js" }
+}

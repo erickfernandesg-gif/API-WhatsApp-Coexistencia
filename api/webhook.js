@@ -1,0 +1,10 @@
+import crypto from 'node:crypto';
+export const config = { api: { bodyParser: false } };
+function readBody(req) { return new Promise((resolve, reject) => { const chunks = []; req.on('data', (chunk) => chunks.push(chunk)); req.on('end', () => resolve(Buffer.concat(chunks))); req.on('error', reject); }); }
+function validSignature(rawBody, signature, appSecret) { if (!signature?.startsWith('sha256=')) return false; const expected = `sha256=${crypto.createHmac('sha256', appSecret).update(rawBody).digest('hex')}`; const supplied = Buffer.from(signature); const expectedBuffer = Buffer.from(expected); return supplied.length === expectedBuffer.length && crypto.timingSafeEqual(supplied, expectedBuffer); }
+export default async function handler(req, res) {
+  if (req.method === 'GET') { const { 'hub.mode': mode, 'hub.verify_token': token, 'hub.challenge': challenge } = req.query; if (mode === 'subscribe' && token && token === process.env.META_WEBHOOK_VERIFY_TOKEN) return res.status(200).send(challenge); return res.status(403).json({ error: 'Webhook verification failed.' }); }
+  if (req.method !== 'POST') { res.setHeader('Allow', 'GET, POST'); return res.status(405).json({ error: 'Method not allowed.' }); }
+  if (!process.env.META_APP_SECRET) return res.status(503).json({ error: 'Webhook is not configured.' });
+  try { const rawBody = await readBody(req); if (!validSignature(rawBody, req.headers['x-hub-signature-256'], process.env.META_APP_SECRET)) return res.status(401).json({ error: 'Invalid webhook signature.' }); const event = JSON.parse(rawBody.toString('utf8')); if (event.object !== 'whatsapp_business_account') return res.status(404).json({ error: 'Unsupported webhook object.' }); for (const entry of event.entry || []) for (const change of entry.changes || []) console.info('Verified WhatsApp webhook received:', change.field || 'unknown'); return res.status(200).json({ received: true }); } catch (error) { console.error('Webhook processing failed:', error.message); return res.status(400).json({ error: 'Invalid webhook request.' }); }
+}
