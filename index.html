@@ -37,7 +37,7 @@
       const status = document.getElementById('status');
       function setStatus(message, kind = '') { status.textContent = message; status.className = kind; }
       window.fbAsyncInit = function () {
-        FB.init({ appId: APP_ID, autoLogAppEvents: true, xfbml: true, version: 'v21.0' });
+        FB.init({ appId: APP_ID, autoLogAppEvents: true, xfbml: true, version: 'v25.0' });
         button.disabled = false; button.textContent = 'Conectar WhatsApp Business';
         setStatus('Pronto para iniciar a autorização segura da Meta.');
       };
@@ -58,7 +58,7 @@
           const code = response?.authResponse?.code;
           if (!code) return setStatus('A autorização foi cancelada ou não foi concluída.', 'error');
           try { await exchangeAuthorizationCode(code); setStatus('Autorização recebida com segurança. Configure o webhook da Meta para concluir a ativação.', 'success'); } catch (error) { setStatus(error.message, 'error'); }
-        }, { config_id: CONFIG_ID, response_type: 'code', override_default_response_type: true, extras: { setup: {}, featureType: 'whatsapp_business_app_onboarding', sessionInfoVersion: '3' } });
+        }, { config_id: CONFIG_ID, response_type: 'code', override_default_response_type: true, extras: { setup: {}, featureType: 'whatsapp_business_app_onboarding', sessionInfoVersion: '3', version: 'v4' } });
       });
       testMessageButton.addEventListener('click', async () => {
         testMessageButton.disabled = true;

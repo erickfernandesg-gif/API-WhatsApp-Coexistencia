@@ -2,7 +2,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'Method not allowed.' }); }
   const { code } = req.body || {};
   if (typeof code !== 'string' || !code.trim()) return res.status(400).json({ error: 'Authorization code is required.' });
-  const { META_APP_ID, META_APP_SECRET, GRAPH_API_VERSION = 'v21.0' } = process.env;
+  const { META_APP_ID, META_APP_SECRET, GRAPH_API_VERSION = 'v25.0' } = process.env;
   if (!META_APP_ID || !META_APP_SECRET) return res.status(503).json({ error: 'Server authorization is not configured.' });
   const params = new URLSearchParams({ client_id: META_APP_ID, client_secret: META_APP_SECRET, code: code.trim() });
   try {
